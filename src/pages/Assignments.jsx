@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Assignments() {
@@ -9,20 +10,14 @@ function Assignments() {
     date: "",
     status: "Assigned",
   });
-
-  const [assignments, setAssignments] = useState([]);
   const [assets, setAssets] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [assetsRes, assignmentsRes] = await Promise.all([
-          API.get("/assets"),
-          API.get("/assignments"),
-        ]);
-        console.log("Assets fetched:", assetsRes.data);
+        const assetsRes = await API.get("/assets");
         setAssets(assetsRes.data);
-        setAssignments(assignmentsRes.data);
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
@@ -51,17 +46,17 @@ function Assignments() {
       alert("Please select a date");
       return;
     }
-
     try {
       await API.post("/assignments", form);
       alert("Assignment recorded!");
       setForm({ asset_id: "", personnel: "", qty: "", date: "", status: "Assigned" });
-
-      const assignmentsRes = await API.get("/assignments");
-      setAssignments(assignmentsRes.data);
     } catch (err) {
       alert(err.response?.data?.message || "Assignment failed");
     }
+  };
+
+  const gotoHistory = () => {
+    navigate("/assignment-history");
   };
 
   return (
@@ -117,7 +112,7 @@ function Assignments() {
         </p>
       </div>
 
-      {/* Main Form and History */}
+      {/* Main Form */}
       <div
         style={{
           flex: 1,
@@ -150,7 +145,6 @@ function Assignments() {
               </option>
             ))}
           </select>
-
           <input
             name="personnel"
             placeholder="Personnel"
@@ -177,29 +171,28 @@ function Assignments() {
             required
             style={inputStyle}
           />
-
           <select name="status" value={form.status} onChange={handleChange} style={inputStyle}>
             <option value="Assigned">Assigned</option>
             <option value="Expended">Expended</option>
           </select>
-
           <button type="submit" style={buttonStyle}>
             Record Assignment
           </button>
         </form>
 
-        <h3>Assignment History</h3>
-        <ul style={{ listStyle: "none", padding: 0, maxHeight: 110, overflow: "auto" }}>
-          {assignments.map((assignment) => (
-            <li
-              key={assignment._id}
-              style={{ padding: 10, marginBottom: 7, backgroundColor: "#f7fafb", borderRadius: 8 }}
-            >
-              {assignment.qty} of {assignment.asset_id?.name || assignment.asset_id} to {assignment.personnel} on{" "}
-              {assignment.date ? new Date(assignment.date).toLocaleDateString() : "-"} ({assignment.status})
-            </li>
-          ))}
-        </ul>
+        {/* Navigation Button */}
+        <button
+          style={{
+            ...buttonStyle,
+            backgroundColor: "#232946",
+            marginTop: "auto",
+            width: 180,
+            alignSelf: "center"
+          }}
+          onClick={gotoHistory}
+        >
+          View Assignment History
+        </button>
       </div>
     </div>
   );
