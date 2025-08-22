@@ -29,66 +29,117 @@ function TransferHistory() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f4f8fb",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        paddingTop: 40,
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 18,
-          padding: 36,
-          width: 550,
-          boxShadow: "0 8px 28px #e2e8f2",
-        }}
-      >
-        <h2>Transfer History</h2>
-        <ul style={{ padding: 0, listStyle: "none", maxHeight: 380, overflowY: "auto" }}>
-          {transfers.length === 0 && <li>No transfers found.</li>}
-          {transfers.map((t) => (
-            <li
-              key={t._id}
-              style={{
-                background: "#f7fafc",
-                marginBottom: 6,
-                padding: 10,
-                borderRadius: 8,
-                boxShadow: "0 1px 4px #e2e8f0",
-                fontSize: 15,
-              }}
-            >
-              {t.qty} of {getAssetName(t.asset_id)} from {t.from_base} to {t.to_base} on{" "}
-              {t.date ? new Date(t.date).toLocaleDateString() : "-"}
-            </li>
-          ))}
-        </ul>
-        <button
-          style={{
-            backgroundColor: "#232946",
-            color: "#fff",
-            fontWeight: "bold",
-            fontSize: 16,
-            padding: "10px",
-            borderRadius: 6,
-            border: "none",
-            cursor: "pointer",
-            marginTop: 24,
-            width: 180,
-            alignSelf: "center",
-            letterSpacing: 1,
-          }}
-          onClick={() => navigate(-1)}
-        >
-          Back
-        </button>
+    <>
+      <div className="container">
+        <div className="panel">
+          <h2>Transfer History</h2>
+          <ul className="transfer-list">
+            {transfers.length === 0 && <li>No transfers found.</li>}
+            {transfers.map((t) => (
+              <li key={t._id} className="transfer-item">
+                {t.qty} of {getAssetName(t.asset_id)} from {t.from_base} to {t.to_base} on{" "}
+                {t.date ? new Date(t.date).toLocaleDateString() : "-"}
+              </li>
+            ))}
+          </ul>
+          <button className="back-button" onClick={() => navigate(-1)}>
+            Back
+          </button>
+        </div>
       </div>
-    </div>
+
+      <style>{`
+        .container {
+          min-height: 100vh;
+          background: #f4f8fb;
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          padding: 40px 16px 20px 16px;
+          box-sizing: border-box;
+        }
+        .panel {
+          background: #fff;
+          border-radius: 18px;
+          box-shadow: 0 8px 28px #e2e8f2;
+          width: 550px;
+          max-width: 100%;
+          padding: 36px;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+        }
+        h2 {
+          font-weight: 700;
+          font-size: 2rem;
+          margin-bottom: 20px;
+          color: #2d3748;
+          user-select: none;
+        }
+        .transfer-list {
+          padding: 0;
+          list-style: none;
+          max-height: 380px;
+          overflow-y: auto;
+          margin: 0;
+        }
+        .transfer-item {
+          background: #f7fafc;
+          margin-bottom: 6px;
+          padding: 12px 16px;
+          border-radius: 8px;
+          box-shadow: 0 1px 4px #e2e8f0;
+          font-size: 1rem;
+        }
+        .back-button {
+          margin-top: 24px;
+          width: 180px;
+          align-self: center;
+          background-color: #232946;
+          color: #fff;
+          font-weight: 700;
+          font-size: 1rem;
+          padding: 10px 0;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          letter-spacing: 1px;
+          transition: background-color 0.3s ease;
+          user-select: none;
+        }
+        .back-button:hover {
+          background-color: #1c243d;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 600px) {
+          .container {
+            padding: 20px 12px;
+          }
+          .panel {
+            width: 100%;
+            padding: 24px 20px;
+          }
+          h2 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+          }
+          .transfer-list {
+            max-height: 300px;
+          }
+          .transfer-item {
+            font-size: 0.9rem;
+            padding: 10px 12px;
+          }
+          .back-button {
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 12px 0;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 

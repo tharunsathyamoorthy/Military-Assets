@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
@@ -14,212 +14,273 @@ function Assignments() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchAssets() {
       try {
-        const assetsRes = await API.get("/assets");
-        setAssets(assetsRes.data);
+        const res = await API.get("/assets");
+        setAssets(res.data);
       } catch (error) {
-        console.error("Failed to fetch data", error);
+        console.error("Failed to fetch assets", error);
       }
     }
-    fetchData();
+    fetchAssets();
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.asset_id) return alert("Please select an asset");
+    if (!form.personnel.trim()) return alert("Please enter personnel");
+    if (!form.qty || Number(form.qty) <= 0) return alert("Enter a valid quantity");
+    if (!form.date) return alert("Please select a date");
 
-    if (!form.asset_id) {
-      alert("Please select an asset");
-      return;
-    }
-    if (!form.personnel.trim()) {
-      alert("Please enter personnel");
-      return;
-    }
-    if (!form.qty || Number(form.qty) <= 0) {
-      alert("Enter a valid quantity");
-      return;
-    }
-    if (!form.date) {
-      alert("Please select a date");
-      return;
-    }
     try {
       await API.post("/assignments", form);
       alert("Assignment recorded!");
-      setForm({ asset_id: "", personnel: "", qty: "", date: "", status: "Assigned" });
+      setForm({
+        asset_id: "",
+        personnel: "",
+        qty: "",
+        date: "",
+        status: "Assigned",
+      });
     } catch (err) {
       alert(err.response?.data?.message || "Assignment failed");
     }
   };
 
-  const gotoHistory = () => {
-    navigate("/assignment-history");
-  };
+  const gotoHistory = () => navigate("/assignment-history");
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f4f5f7",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}
-    >
-      {/* Left Panel */}
-      <div
-        style={{
-          background: "#FFD600",
-          width: 330,
-          borderRadius: "24px 0 0 24px",
-          height: 550,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 8px 40px #e0e6f2",
-          padding: 36,
-          marginRight: 20,
-        }}
-      >
-        <div
-          style={{
-            width: 98,
-            height: 98,
-            borderRadius: "50%",
-            background: "#FFA726",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginBottom: 30,
-          }}
-        >
-          <svg width={52} height={52} viewBox="0 0 52 52" fill="none">
-            <circle cx={26} cy={26} r={26} fill="#fff" />
-            <ellipse cx={26} cy={25} rx={14} ry={13} fill="#232946" />
-            <ellipse cx={26} cy={41} rx={14} ry={7} fill="#fff" />
-          </svg>
-        </div>
-        <h2 style={{ fontSize: 24, fontWeight: "bold", color: "#232946", marginBottom: 10 }}>
-          Assign Equipment
-        </h2>
-        <p style={{ fontSize: 15, color: "#232946", textAlign: "center" }}>
-          Assign or expend assets for your personnel.
-        </p>
-      </div>
+    <>
+      <div className="page-container">
+        <aside className="sidebar">
+          <div className="icon-circle">
+            <svg width={52} height={52} viewBox="0 0 52 52" fill="none">
+              <circle cx={26} cy={26} r={26} fill="#fff" />
+              <ellipse cx={26} cy={25} rx={14} ry={13} fill="#232946" />
+              <ellipse cx={26} cy={41} rx={14} ry={7} fill="#fff" />
+            </svg>
+          </div>
+          <h1 className="page-title">Assign Equipment</h1>
+          <p className="page-description">Assign or expend assets for your personnel.</p>
+        </aside>
 
-      {/* Main Form */}
-      <div
-        style={{
-          flex: 1,
-          maxWidth: 540,
-          background: "#fff",
-          borderRadius: "0 24px 24px 0",
-          height: 550,
-          padding: "28px 36px",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "auto",
-        }}
-      >
-        <h2 style={{ marginBottom: 15 }}>Assignments & Expenditures</h2>
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}
-        >
-          <select
-            name="asset_id"
-            value={form.asset_id}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          >
-            <option value="">{assets.length === 0 ? "No assets available" : "Select Asset"}</option>
-            {assets.map((a) => (
-              <option key={a._id} value={a._id}>
-                {a.name} ({a.type}) - {a.base}
+        <main className="main-content">
+          <h2 className="heading">Assignments & Expenditures</h2>
+          <form className="form" onSubmit={handleSubmit}>
+            <select
+              name="asset_id"
+              value={form.asset_id}
+              onChange={handleChange}
+              required
+              className="input"
+            >
+              <option value="">
+                {assets.length === 0 ? "No assets available" : "Select Asset"}
               </option>
-            ))}
-          </select>
-          <input
-            name="personnel"
-            placeholder="Personnel"
-            value={form.personnel}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
-          <input
-            name="qty"
-            type="number"
-            min={1}
-            placeholder="Quantity"
-            value={form.qty}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
-          <input
-            name="date"
-            type="date"
-            value={form.date}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
-          <select name="status" value={form.status} onChange={handleChange} style={inputStyle}>
-            <option value="Assigned">Assigned</option>
-            <option value="Expended">Expended</option>
-          </select>
-          <button type="submit" style={buttonStyle}>
-            Record Assignment
-          </button>
-        </form>
+              {assets.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name} ({a.type}) - {a.base}
+                </option>
+              ))}
+            </select>
 
-        {/* Navigation Button */}
-        <button
-          style={{
-            ...buttonStyle,
-            backgroundColor: "#232946",
-            marginTop: "auto",
-            width: 180,
-            alignSelf: "center"
-          }}
-          onClick={gotoHistory}
-        >
-          View Assignment History
-        </button>
+            <input
+              type="text"
+              name="personnel"
+              placeholder="Personnel"
+              value={form.personnel}
+              onChange={handleChange}
+              required
+              className="input"
+            />
+
+            <input
+              type="number"
+              name="qty"
+              placeholder="Quantity"
+              min={1}
+              value={form.qty}
+              onChange={handleChange}
+              required
+              className="input"
+            />
+
+            <input
+              type="date"
+              name="date"
+              value={form.date}
+              onChange={handleChange}
+              required
+              className="input"
+            />
+
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="input"
+            >
+              <option value="Assigned">Assigned</option>
+              <option value="Expended">Expended</option>
+            </select>
+
+            <button type="submit" className="submit-button">
+              Record Assignment
+            </button>
+          </form>
+
+          <button className="history-button" onClick={gotoHistory}>
+            View Assignment History
+          </button>
+        </main>
       </div>
-    </div>
+
+      {/* Styles */}
+      <style>{`
+        .page-container {
+          display: flex;
+          gap: 20px;
+          min-height: 100vh;
+          padding: 20px;
+          background: #f7fafc;
+          box-sizing: border-box;
+          justify-content: center;
+        }
+        .sidebar {
+          width: 320px;
+          background: #ffd600;
+          border-radius: 24px 0 0 24px;
+          padding: 36px 30px;
+          box-shadow: 0 0 20px rgba(226, 230, 242, 0.6);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #232946;
+          text-align: center;
+          user-select: none;
+        }
+        .icon-circle {
+          width: 98px;
+          height: 98px;
+          background: #ffa726;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 30px;
+        }
+        .page-title {
+          font-size: 28px;
+          font-weight: 800;
+          margin-bottom: 12px;
+        }
+        .page-description {
+          font-size: 16px;
+          line-height: 1.4;
+        }
+        .main-content {
+          flex-grow: 1;
+          max-width: 600px;
+          background: #fff;
+          border-radius: 0 24px 24px 24px;
+          padding: 40px;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          height: 660px;
+          overflow-y: auto;
+        }
+        .heading {
+          font-size: 28px;
+          font-weight: 700;
+          margin-bottom: 14px;
+          color: #2d3748;
+          user-select: none;
+        }
+        .form {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          flex-grow: 1;
+        }
+        .input {
+          padding: 12px;
+          font-size: 16px;
+          border-radius: 6px;
+          border: 1.5px solid #d1d7de;
+          outline: none;
+          transition: border-color 0.3s ease;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .input:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+        }
+        .submit-button {
+          background: #2563eb;
+          color: white;
+          font-weight: 700;
+          font-size: 18px;
+          padding: 14px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          width: 160px;
+          align-self: flex-end;
+          user-select: none;
+          transition: background-color 0.3s ease;
+          margin-top: 10px;
+        }
+        .submit-button:hover {
+          background: #1e43c4;
+        }
+        .history-button {
+          background: #232946;
+          color: white;
+          font-weight: 700;
+          font-size: 18px;
+          padding: 14px 0;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          width: 220px;
+          margin: 25px auto 0;
+          user-select: none;
+          transition: background-color 0.3s ease;
+        }
+        .history-button:hover {
+          background: #1a1e3a;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .page-container {
+            flex-direction: column;
+            padding: 20px 15px;
+          }
+          .sidebar,
+          .main-content {
+            width: 100%;
+            max-width: none;
+            border-radius: 20px;
+            padding: 30px 24px;
+            height: auto;
+          }
+          .submit-button,
+          .history-button {
+            width: 100%;
+            align-self: stretch;
+          }
+          .history-button {
+            margin: 20px 0 0;
+          }
+        }
+      `}</style>
+    </>
   );
 }
-
-const inputStyle = {
-  padding: 10,
-  borderRadius: 6,
-  border: "1px solid #d3d7cf",
-  marginBottom: 10,
-  fontSize: 15,
-  outline: "none",
-  width: "100%",
-};
-
-const buttonStyle = {
-  backgroundColor: "#2563eb",
-  color: "#fff",
-  fontWeight: "bold",
-  fontSize: 16,
-  padding: "10px",
-  borderRadius: 6,
-  border: "none",
-  cursor: "pointer",
-  width: 140,
-  alignSelf: "flex-end",
-  letterSpacing: 1,
-};
 
 export default Assignments;

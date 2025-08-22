@@ -10,7 +10,7 @@ import PurchaseHistory from "./pages/PurchaseHistory.jsx";
 import Assignments from "./pages/Assignments.jsx";
 import AssignmentHistory from "./pages/AssignmentHistory.jsx"; // <-- Import here
 import Assets from "./pages/Assets.jsx";
-import Profile from "./pages/Profile.jsx";
+//import Profile from "./pages/Profile.jsx";
 import Layout from "./components/Navbar.jsx";
 
 function App() {
@@ -33,7 +33,7 @@ function App() {
             <Route path="/assignments" element={<Assignments />} />
             <Route path="/assignment-history" element={<AssignmentHistory />} />  {/* <-- Add route */}
             <Route path="/assets" element={<Assets />} />
-            <Route path="/profile" element={<Profile />} />
+            
           </Route>
           <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
         </Routes>
