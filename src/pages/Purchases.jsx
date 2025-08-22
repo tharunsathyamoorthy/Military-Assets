@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Purchases() {
@@ -8,21 +9,22 @@ function Purchases() {
     qty: "",
     date: "",
   });
-  const [purchases, setPurchases] = useState([]);
   const [assets, setAssets] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const assetsRes = await API.get("/assets");
-      setAssets(assetsRes.data);
-      const purchasesRes = await API.get("/purchases");
-      setPurchases(purchasesRes.data);
+      try {
+        const assetsRes = await API.get("/assets");
+        setAssets(assetsRes.data);
+      } catch (error) {
+        console.error("Failed to fetch assets", error);
+      }
     };
     fetchData();
   }, []);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handlePurchase = async (e) => {
     e.preventDefault();
@@ -30,102 +32,154 @@ function Purchases() {
       await API.post("/purchases", form);
       alert("Purchase recorded!");
       setForm({ asset_id: "", base_id: "", qty: "", date: "" });
-      const purchasesRes = await API.get("/purchases");
-      setPurchases(purchasesRes.data);
     } catch (err) {
       alert(err.response?.data?.message || "Purchase failed");
     }
   };
 
-  const getAssetName = (id) => {
-    const asset = assets.find((a) => a._id === id);
-    return asset ? `${asset.name} (${asset.type})` : id;
+  const gotoHistory = () => {
+    navigate("/purchase-history");
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f4f8fb",
-      display: "flex", alignItems: "center", justifyContent: "center"
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f4f8fb",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
       {/* Yellow Left Panel */}
-      <div style={{
-        background: "#FFD600", width: 330, borderRadius: "24px 0 0 24px",
-        height: 620, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center", boxShadow: "0 8px 40px #e2e8f0", padding: "36px 26px",
-      }}>
-        <div style={{
-          width: 98, height: 98, borderRadius: "50%", background: "#FFA726",
-          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 30,
-        }}>
+      <div
+        style={{
+          background: "#FFD600",
+          width: 330,
+          borderRadius: "24px 0 0 24px",
+          height: 620,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 8px 40px #e2e8f0",
+          padding: "36px 26px",
+        }}
+      >
+        <div
+          style={{
+            width: 98,
+            height: 98,
+            borderRadius: "50%",
+            background: "#FFA726",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 30,
+          }}
+        >
           <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="26" r="26" fill="#fff"/>
-            <ellipse cx="26" cy="25" rx="14" ry="13" fill="#232946"/>
-            <ellipse cx="26" cy="41" rx="14" ry="7" fill="#fff"/>
+            <circle cx="26" cy="26" r="26" fill="#fff" />
+            <ellipse cx="26" cy="25" rx="14" ry="13" fill="#232946" />
+            <ellipse cx="26" cy="41" rx="14" ry="7" fill="#fff" />
           </svg>
         </div>
         <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 13, color: "#232946" }}>
           Add Purchases
         </div>
-        <div style={{
-          fontSize: 15, color: "#232946", marginBottom: 22, textAlign: "center"
-        }}>
+        <div style={{ fontSize: 15, color: "#232946", marginBottom: 22, textAlign: "center" }}>
           It should only take a couple of minutes<br />
           to record your asset purchases.
         </div>
-        <button style={{
-          border: "none", outline: "none", borderRadius: "50%",
-          background: "#232946", color: "#fff", width: 48, height: 48,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", marginTop: 14, fontSize: 22,
-          boxShadow: "0 1px 8px #cfcfcf"
-        }}>
-          &#8594;
-        </button>
+        {/* Optional: keep the yellow panel arrow, or remove if you want only on right */}
       </div>
 
-      {/* White Panel: form and history */}
-      <div style={{
-        background: "#fff", borderRadius: "0 24px 24px 0", boxShadow: "0 8px 40px #e2e8f0",
-        flex: "1 1 0", minWidth: 360, maxWidth: 540, height: 620, padding: "28px 36px",
-        display: "flex", flexDirection: "column", justifyContent: "center", overflowY: 'auto'
-      }}>
-        <h2 style={{ color: "#2d3748", fontWeight: 700, fontSize: 26, marginBottom: 15 }}>Asset Purchases</h2>
-        {/* Purchase form */}
-        <form onSubmit={handlePurchase}
-          style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-          <select name="asset_id" value={form.asset_id}
-            onChange={handleChange} required style={inputStyle}>
-            <option value="">
-              {assets.length === 0 ? "No assets available" : "Select Asset"}
-            </option>
+      {/* White Panel: form and history button */}
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "0 24px 24px 0",
+          boxShadow: "0 8px 40px #e2e8f0",
+          flex: "1 1 0",
+          minWidth: 360,
+          maxWidth: 540,
+          height: 620,
+          padding: "28px 36px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          overflowY: "auto",
+        }}
+      >
+        <h2 style={{ color: "#2d3748", fontWeight: 700, fontSize: 26, marginBottom: 15 }}>
+          Asset Purchases
+        </h2>
+        <form onSubmit={handlePurchase} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <select
+            name="asset_id"
+            value={form.asset_id}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          >
+            <option value="">{assets.length === 0 ? "No assets available" : "Select Asset"}</option>
             {assets.map((a) => (
               <option key={a._id} value={a._id}>
                 {a.name} ({a.type}) - {a.base}
               </option>
             ))}
           </select>
-          <input name="base_id" placeholder="Base" value={form.base_id}
-            onChange={handleChange} required style={inputStyle} />
-          <input name="qty" type="number" placeholder="Quantity" value={form.qty}
-            onChange={handleChange} required style={inputStyle} />
-          <input name="date" type="date" value={form.date}
-            onChange={handleChange} required style={inputStyle} />
-          <button type="submit" style={buttonStyle}>Record Purchase</button>
+          <input
+            name="base_id"
+            placeholder="Base"
+            value={form.base_id}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
+          <input
+            name="qty"
+            type="number"
+            placeholder="Quantity"
+            value={form.qty}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
+          <input
+            name="date"
+            type="date"
+            value={form.date}
+            onChange={handleChange}
+            required
+            style={inputStyle}
+          />
+          <button type="submit" style={buttonStyle}>
+            Record Purchase
+          </button>
         </form>
-        <h3 style={{ color: "#4a5568", fontWeight: 600, marginBottom: 5, fontSize: 17 }}>Purchase History</h3>
-        <ul style={{ padding: 0, listStyle: "none", maxHeight: 100, overflow: 'auto' }}>
-          {purchases.map((p) => (
-            <li
-              key={p._id}
-              style={{
-                background: "#f7fafc", marginBottom: 6,
-                padding: 10, borderRadius: 8, boxShadow: "0 1px 4px #e2e8f0", fontSize: 15,
-              }}
-            >
-              {p.qty} of {getAssetName(p.asset_id)} at {p.base_name || p.base_id} on {new Date(p.date).toLocaleDateString()}
-            </li>
-          ))}
-        </ul>
+        
+        {/* VIEW PURCHASE HISTORY BUTTON */}
+        <button
+          style={{
+            background: "#232946",
+            color: "#fff",
+            fontWeight: "bold",
+            fontSize: 16,
+            padding: "10px 0",
+            borderRadius: 6,
+            border: "none",
+            cursor: "pointer",
+            marginTop: 24,
+            width: 180,
+            alignSelf: "center",
+            letterSpacing: 1,
+          }}
+          onClick={gotoHistory}
+        >
+          View Purchase History
+        </button>
       </div>
     </div>
   );
