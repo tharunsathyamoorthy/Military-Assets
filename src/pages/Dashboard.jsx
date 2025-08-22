@@ -20,33 +20,6 @@ function useSafeNumber(value) {
   return isFinite(num) ? num : 0;
 }
 
-// Count-up animation hook (duration in ms, default 6000ms)
-function useCountUp(target, duration = 6000) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    let startTs;
-    let raf;
-    if (target === 0) {
-      setCount(0);
-      return;
-    }
-    function animate(ts) {
-      if (!startTs) startTs = ts;
-      let progress = Math.min(1, (ts - startTs) / duration);
-      setCount(Math.floor(progress * (target - start) + start));
-      if (progress < 1) {
-        raf = requestAnimationFrame(animate);
-      } else {
-        setCount(target);
-      }
-    }
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-  return count;
-}
-
 function Dashboard() {
   const [assets, setAssets] = useState([]);
   const [metrics, setMetrics] = useState({
@@ -105,13 +78,10 @@ function Dashboard() {
 
   const StatCard = ({ label, value, color }) => {
     const [hover, setHover] = useState(false);
-    const animatedValue = useCountUp(value);
 
     // For Net Movement: always show positive, color red if negative
-    const showValue =
-      label === "Net Movement" ? Math.abs(animatedValue) : animatedValue;
-    const showColor =
-      label === "Net Movement" && value < 0 ? "#ef4444" : "#222";
+    const showValue = label === "Net Movement" ? Math.abs(value) : value;
+    const showColor = label === "Net Movement" && value < 0 ? "#ef4444" : "#222";
 
     return (
       <div
