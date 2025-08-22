@@ -4,6 +4,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Transfers from "./pages/Transfers.jsx";
+import TransferHistory from "./pages/TransferHistory.jsx";
 import Purchases from "./pages/Purchases.jsx";
 import PurchaseHistory from "./pages/PurchaseHistory.jsx";
 import Assignments from "./pages/Assignments.jsx";
@@ -26,6 +27,7 @@ function App() {
           <Route element={token ? <Layout /> : <Navigate to="/login" />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transfers" element={<Transfers />} />
+            <Route path="/transfer-history" element={<TransferHistory />} />
             <Route path="/purchases" element={<Purchases />} />
             <Route path="/purchase-history" element={<PurchaseHistory />} />
             <Route path="/assignments" element={<Assignments />} />
