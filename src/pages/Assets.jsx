@@ -3,87 +3,33 @@ import API from "../services/api";
 
 function Assets() {
   const [assets, setAssets] = useState([]);
-  const [purchases, setPurchases] = useState([]);
-  const [transfers, setTransfers] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [expended, setExpended] = useState([]);
-
   const [showAdd, setShowAdd] = useState(false);
   const [newAsset, setNewAsset] = useState({
     name: "",
     type: "",
     base: "",
     openingBalance: "",
-    closingBalance: "",
+    closingBalance: ""
   });
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchAssets = async () => {
       try {
-        const assetRes = await API.get("/assets");
-        const purchasesRes = await API.get("/purchases");
-        const transfersRes = await API.get("/transfers");
-        const assignmentsRes = await API.get("/assignments");
-        // If you have a separate expended endpoint, use /expended, else filter from assignments or asset logs
-        // For demo, using assignments for expended if not present in backend
-        // If you do have /expended: const expendedRes = await API.get("/expended");
-        setPurchases(purchasesRes.data);
-        setTransfers(transfersRes.data);
-        setAssignments(assignmentsRes.data);
-        // setExpended(expendedRes.data); // uncomment if available
-
-        const assetsWithStats = assetRes.data.map((asset) => {
-          const assetPurchases = purchasesRes.data
-            .filter((p) => p.asset_id === asset._id)
-            .reduce((acc, cur) => acc + (Number(cur.qty) || 0), 0);
-
-          const assetTransferIn = transfersRes.data
-            .filter((t) => t.asset_id === asset._id)
-            .reduce(
-              (acc, t) =>
-                acc +
-                (String(t.to_base).toLowerCase() === String(asset.base).toLowerCase()
-                  ? Number(t.qty) || 0
-                  : 0),
-              0
-            );
-
-          const assetTransferOut = transfersRes.data
-            .filter((t) => t.asset_id === asset._id)
-            .reduce(
-              (acc, t) =>
-                acc +
-                (String(t.from_base).toLowerCase() === String(asset.base).toLowerCase()
-                  ? Number(t.qty) || 0
-                  : 0),
-              0
-            );
-
-          const assetAssigned = assignmentsRes.data
-            .filter((a) => a.asset_id === asset._id)
-            .reduce((acc, cur) => acc + (Number(cur.qty) || 0), 0);
-
-          // If expended collection/endpoint: (otherwise fallback to 0)
-          const assetExpended = expended.length > 0
-            ? expended.filter((e) => e.asset_id === asset._id).reduce((acc, cur) => acc + (Number(cur.qty) || 0), 0)
-            : 0;
-
-          return {
-            ...asset,
-            purchases: assetPurchases,
-            transferIn: assetTransferIn,
-            transferOut: assetTransferOut,
-            assigned: assetAssigned,
-            expended: assetExpended,
-          };
-        });
-
-        setAssets(assetsWithStats);
+        const res = await API.get("/assets");
+        const assetsWithDefaults = res.data.map((asset) => ({
+          ...asset,
+          purchases: asset.purchases ?? 0,
+          transferIn: asset.transferIn ?? 0,
+          transferOut: asset.transferOut ?? 0,
+          assigned: asset.assigned ?? 0,
+          expended: asset.expended ?? 0,
+        }));
+        setAssets(assetsWithDefaults);
       } catch (err) {
         console.log(err);
       }
     };
-    fetchAll();
+    fetchAssets();
   }, []);
 
   const thStyle = {
@@ -113,18 +59,17 @@ function Assets() {
       await API.post("/assets", {
         ...newAsset,
         openingBalance: Number(newAsset.openingBalance),
-        closingBalance: Number(newAsset.closingBalance),
+        closingBalance: Number(newAsset.closingBalance)
       });
       setNewAsset({
         name: "",
         type: "",
         base: "",
         openingBalance: "",
-        closingBalance: "",
+        closingBalance: ""
       });
       setShowAdd(false);
       const res = await API.get("/assets");
-      // Keep purchases/transfer/assigned/expended as 0 for newly created assets (will be updated when data created)
       const assetsWithDefaults = res.data.map((asset) => ({
         ...asset,
         purchases: asset.purchases ?? 0,
@@ -140,25 +85,16 @@ function Assets() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f5f6fa",
-        padding: "38px 44px 44px",
-        fontFamily: "Inter, Segoe UI, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 18,
-        }}
-      >
+    <div style={{
+      minHeight: "100vh",
+      background: "#f5f6fa",
+      padding: "38px 44px 44px",
+      fontFamily: "Inter, Segoe UI, sans-serif"
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
         <h2 style={{ color: "#181825", fontWeight: 800, fontSize: 28 }}>Assets</h2>
         <button
-          onClick={() => setShowAdd((v) => !v)}
+          onClick={() => setShowAdd(v => !v)}
           style={{
             display: "flex",
             alignItems: "center",
@@ -171,29 +107,20 @@ function Assets() {
             fontSize: 17,
             padding: "11px 18px",
             cursor: "pointer",
-            boxShadow: "0 2px 8px #e2e8f0",
+            boxShadow: "0 2px 8px #e2e8f0"
           }}
         >
-          <span
-            style={{
-              width: 23,
-              height: 23,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#fff4",
-              borderRadius: "50%",
-              fontSize: 22,
-            }}
-          >
-            +
-          </span>
+          <span style={{
+            width: 23, height: 23, display: "inline-flex",
+            alignItems: "center", justifyContent: "center", background: "#fff4",
+            borderRadius: "50%", fontSize: 22
+          }}>+</span>
           Add Asset
         </button>
       </div>
+      {/* Add asset form modal-panel */}
       {showAdd && (
-        <form
-          onSubmit={handleAddAsset}
+        <form onSubmit={handleAddAsset}
           style={{
             background: "#f7fafc",
             borderRadius: 12,
@@ -202,85 +129,48 @@ function Assets() {
             padding: "20px 28px",
             display: "flex",
             gap: 17,
-            alignItems: "end",
-          }}
-        >
-          <input
-            name="name"
-            placeholder="Asset Name"
-            value={newAsset.name}
-            onChange={handleAddChange}
-            required
+            alignItems: "end"
+          }}>
+          <input name="name" placeholder="Asset Name" value={newAsset.name}
+            onChange={handleAddChange} required
             style={{
-              padding: 11,
-              border: "1.2px solid #d3d7cf",
-              borderRadius: 6,
-              fontSize: 15,
-              width: 172,
+              padding: 11, border: "1.2px solid #d3d7cf",
+              borderRadius: 6, fontSize: 15, width: 172
             }}
           />
-          <input
-            name="type"
-            placeholder="Type (e.g. Weapon, Vehicle)"
-            value={newAsset.type}
-            onChange={handleAddChange}
-            required
+          <input name="type" placeholder="Type (e.g. Weapon, Vehicle)" value={newAsset.type}
+            onChange={handleAddChange} required
             style={{
-              padding: 11,
-              border: "1.2px solid #d3d7cf",
-              borderRadius: 6,
-              fontSize: 15,
-              width: 180,
+              padding: 11, border: "1.2px solid #d3d7cf",
+              borderRadius: 6, fontSize: 15, width: 180
             }}
           />
-          <input
-            name="base"
-            placeholder="Base"
-            value={newAsset.base}
-            onChange={handleAddChange}
-            required
+          <input name="base" placeholder="Base" value={newAsset.base}
+            onChange={handleAddChange} required
             style={{
-              padding: 11,
-              border: "1.2px solid #d3d7cf",
-              borderRadius: 6,
-              fontSize: 15,
-              width: 140,
+              padding: 11, border: "1.2px solid #d3d7cf",
+              borderRadius: 6, fontSize: 15, width: 140
             }}
           />
-          <input
-            name="openingBalance"
-            type="number"
-            min="0"
-            placeholder="Opening"
+          <input name="openingBalance" type="number" min="0" placeholder="Opening"
             value={newAsset.openingBalance}
             onChange={handleAddChange}
             required
             style={{
-              padding: 11,
-              border: "1.2px solid #d3d7cf",
-              borderRadius: 6,
-              fontSize: 15,
-              width: 85,
+              padding: 11, border: "1.2px solid #d3d7cf",
+              borderRadius: 6, fontSize: 15, width: 85
             }}
           />
-          <input
-            name="closingBalance"
-            type="number"
-            min="0"
-            placeholder="Closing"
+          <input name="closingBalance" type="number" min="0" placeholder="Closing"
             value={newAsset.closingBalance}
             onChange={handleAddChange}
             required
             style={{
-              padding: 11,
-              border: "1.2px solid #d3d7cf",
-              borderRadius: 6,
-              fontSize: 15,
-              width: 85,
+              padding: 11, border: "1.2px solid #d3d7cf",
+              borderRadius: 6, fontSize: 15, width: 85
             }}
           />
-          <button
-            type="submit"
+          <button type="submit"
             style={{
               background: "#2d7df6",
               color: "#fff",
@@ -291,30 +181,17 @@ function Assets() {
               fontWeight: 700,
               fontSize: 15,
               boxShadow: "0 2px 8px #e2e8f0",
-              letterSpacing: 1,
-            }}
-          >
+              letterSpacing: 1
+            }}>
             Add
           </button>
         </form>
       )}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 18,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-          padding: 28,
-        }}
-      >
+      <div style={{
+        background: "#fff", borderRadius: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", padding: 28
+      }}>
         <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: "0 7px",
-              fontSize: 16,
-            }}
-          >
+          <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 7px", fontSize: 16 }}>
             <thead>
               <tr style={{ background: "#f8fafc" }}>
                 <th style={thStyle}>Name</th>
@@ -338,25 +215,21 @@ function Assets() {
                     borderRadius: 14,
                     boxShadow: "0 1px 6px rgba(0,0,0,0.03)",
                     transition: "background 0.18s",
-                    cursor: "default",
+                    cursor: "default"
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#f8fafc")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "#fff")
-                  }
+                  onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#fff"}
                 >
                   <td style={tdStyle}>{asset.name}</td>
                   <td style={tdStyle}>{asset.type}</td>
                   <td style={tdStyle}>{asset.base}</td>
                   <td style={tdStyle}>{asset.openingBalance}</td>
                   <td style={tdStyle}>{asset.closingBalance}</td>
-                  <td style={tdStyle}>{asset.purchases}</td>
-                  <td style={tdStyle}>{asset.transferIn}</td>
-                  <td style={tdStyle}>{asset.transferOut}</td>
-                  <td style={tdStyle}>{asset.assigned}</td>
-                  <td style={tdStyle}>{asset.expended}</td>
+                  <td style={tdStyle}>{asset.purchases ?? 0}</td>
+                  <td style={tdStyle}>{asset.transferIn ?? 0}</td>
+                  <td style={tdStyle}>{asset.transferOut ?? 0}</td>
+                  <td style={tdStyle}>{asset.assigned ?? 0}</td>
+                  <td style={tdStyle}>{asset.expended ?? 0}</td>
                 </tr>
               ))}
             </tbody>
