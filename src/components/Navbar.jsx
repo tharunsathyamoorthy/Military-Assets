@@ -1,5 +1,6 @@
 import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { FaHome, FaShoppingCart, FaExchangeAlt, FaClipboardList, FaBoxes, FaUserCircle } from "react-icons/fa";
 
 export default function Layout() {
   const location = useLocation();
@@ -71,22 +72,22 @@ export default function Layout() {
           </div>
         </div>
         <nav style={{ marginTop: 32 }}>
-          <SidebarLink icon="🏠" to="/dashboard" selected={location.pathname === "/dashboard"}>
+          <SidebarLink icon={<FaHome />} to="/dashboard" selected={location.pathname === "/dashboard"}>
             Dashboard
           </SidebarLink>
-          <SidebarLink icon="🛒" to="/purchases" selected={location.pathname === "/purchases"}>
+          <SidebarLink icon={<FaShoppingCart />} to="/purchases" selected={location.pathname === "/purchases"}>
             Purchases
           </SidebarLink>
-          <SidebarLink icon="🔄" to="/transfers" selected={location.pathname === "/transfers"}>
+          <SidebarLink icon={<FaExchangeAlt />} to="/transfers" selected={location.pathname === "/transfers"}>
             Transfers
           </SidebarLink>
-          <SidebarLink icon="🧑‍💼" to="/assignments" selected={location.pathname === "/assignments"}>
+          <SidebarLink icon={<FaClipboardList />} to="/assignments" selected={location.pathname === "/assignments"}>
             Assignments
           </SidebarLink>
-          <SidebarLink icon="🧑‍💼" to="/assets" selected={location.pathname === "/assets"}>
+          <SidebarLink icon={<FaBoxes />} to="/assets" selected={location.pathname === "/assets"}>
             Assets
           </SidebarLink>
-          <SidebarLink icon="📄" to="/profile" selected={location.pathname === "/profile"}>
+          <SidebarLink icon={<FaUserCircle />} to="/profile" selected={location.pathname === "/profile"}>
             Profile
           </SidebarLink>
         </nav>
