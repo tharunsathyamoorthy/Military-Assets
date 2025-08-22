@@ -16,7 +16,11 @@ export default function Layout() {
           background: "#fff",
           boxShadow: "2px 0 10px #F0F1F5",
           borderTopRightRadius: 32,
-          minHeight: "100vh",
+          height: "100vh",          // Required for scrollable sidebar
+          overflowY: "auto",        // Enables vertical scrolling when needed
+          position: "sticky",       // Keeps sidebar visible as you scroll the page
+          top: 0,
+          left: 0,
         }}
       >
         <div style={{ padding: "32px 0 0 0", textAlign: "center" }}>
@@ -93,7 +97,7 @@ export default function Layout() {
         </nav>
       </aside>
       {/* Main content */}
-      <main style={{ flex: 1, minHeight: "100vh", background: "#F6F8FC" }}>
+      <main style={{ flex: 1, minHeight: "100vh", background: "#F6F8FC", overflow: "auto" }}>
         <Outlet />
       </main>
     </div>
