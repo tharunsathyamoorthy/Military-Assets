@@ -1,5 +1,6 @@
 import express from "express";
-import Asset from "../models/Asset.js";
+import Asset from "../models/Asset.js"; // Use this exact path everywhere!
+
 import { authenticate, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

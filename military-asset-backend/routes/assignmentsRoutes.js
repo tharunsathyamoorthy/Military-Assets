@@ -1,6 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import Asset from "./models/Asset.js"; // Adjust the actual path
+import Asset from "../models/Asset.js"; // <--- MAKE SURE THIS MATCHES assetsRoutes.js!
 
 const router = express.Router();
 
@@ -15,12 +15,10 @@ const assignmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Assignment = mongoose.model("Assignment", assignmentSchema);
+const Assignment = mongoose.models.Assignment || mongoose.model("Assignment", assignmentSchema);
 
 router.post("/", async (req, res) => {
   try {
-    console.log("Assignment payload received:", req.body);
-
     const { asset_id, personnel, qty, date, status } = req.body;
 
     if (!asset_id || !personnel || !qty || !date || !status) {
@@ -51,7 +49,6 @@ router.post("/", async (req, res) => {
     if (status === "Expended") {
       asset.expended = (asset.expended || 0) + qty;
     }
-
     asset.closingBalance -= qty;
     await asset.save();
 
@@ -65,7 +62,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const assignments = await Assignment.find()
-      .populate("asset_id", "name type")
+      .populate("asset_id", "name type base")
       .sort({ createdAt: -1 }); // Latest first
     res.json(assignments);
   } catch (err) {
