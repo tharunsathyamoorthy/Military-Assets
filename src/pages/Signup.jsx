@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
 
-// You can replace this with your actual logo SVG or image
+// Military Logo SVG - same as Login
 const MilitaryLogo = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
     <circle cx="24" cy="24" r="24" fill="#6B7267" />
@@ -11,7 +11,7 @@ const MilitaryLogo = () => (
   </svg>
 );
 
-function Signup() {
+export default function Signup() {
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -39,6 +39,47 @@ function Signup() {
     }
   };
 
+  const cardStyle = {
+    maxWidth: 420,
+    margin: "60px auto",
+    background: "#fff",
+    borderRadius: 20,
+    boxShadow: "0 10px 36px rgba(0,0,0,0.12)",
+    padding: 48,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  };
+
+  const inputStyle = {
+    padding: 16,
+    borderRadius: 8,
+    border: "1.5px solid #cbd5e1",
+    fontSize: 17,
+    outline: "none",
+    background: "#f9fafb",
+    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.06)",
+    width: "100%",
+    transition: "border-color 0.3s ease",
+  };
+
+  const buttonStyle = {
+    background: "#6B7267",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "16px 0",
+    cursor: "pointer",
+    fontWeight: "700",
+    fontSize: 20,
+    marginTop: 16,
+    boxShadow: "0 4px 14px rgba(107,114,103,0.4)",
+    width: "100%",
+    letterSpacing: 1.1,
+    transition: "background 0.3s ease",
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -46,41 +87,35 @@ function Signup() {
       transition={{ duration: 0.5 }}
       style={cardStyle}
     >
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 20 }}>
         <MilitaryLogo />
       </div>
-      <div
+      <h2
         style={{
-          fontWeight: 700,
-          fontSize: 28,
+          fontWeight: 800,
+          fontSize: 30,
           color: "#6B7267",
           letterSpacing: 1,
-          marginBottom: 8,
+          marginBottom: 16,
         }}
       >
         MILITARY
-      </div>
-      <div
+      </h2>
+      <p
         style={{
           fontSize: 18,
           color: "#222",
-          marginBottom: 24,
+          marginBottom: 28,
           fontWeight: 500,
+          textAlign: "center",
+          maxWidth: 280,
         }}
       >
         Need some help?
-      </div>
-      <form
-        onSubmit={handleSignup}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          width: "100%",
-        }}
-      >
+      </p>
+      <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: 18, width: "100%" }}>
         <motion.input
-          whileFocus={{ scale: 1.02, borderColor: "#6B7267" }}
+          whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
           name="name"
           placeholder="Name"
           value={form.name}
@@ -89,7 +124,7 @@ function Signup() {
           style={inputStyle}
         />
         <motion.input
-          whileFocus={{ scale: 1.02, borderColor: "#6B7267" }}
+          whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
           name="email"
           type="email"
           placeholder="Email"
@@ -99,7 +134,7 @@ function Signup() {
           style={inputStyle}
         />
         <motion.input
-          whileFocus={{ scale: 1.02, borderColor: "#6B7267" }}
+          whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
           name="password"
           type="password"
           placeholder="Password"
@@ -109,7 +144,7 @@ function Signup() {
           style={inputStyle}
         />
         <motion.select
-          whileFocus={{ scale: 1.02, borderColor: "#6B7267" }}
+          whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
           name="role"
           value={form.role}
           onChange={handleChange}
@@ -120,7 +155,7 @@ function Signup() {
           <option value="LogisticsOfficer">LogisticsOfficer</option>
         </motion.select>
         <motion.input
-          whileFocus={{ scale: 1.02, borderColor: "#6B7267" }}
+          whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
           name="base"
           placeholder="Base (if applicable)"
           value={form.base}
@@ -128,60 +163,19 @@ function Signup() {
           style={inputStyle}
         />
         <motion.button
-          whileHover={{ scale: 1.03, background: "#6B7267" }}
+          whileHover={{ scale: 1.05, background: "#5a6357" }}
           type="submit"
           style={buttonStyle}
         >
           Sign Up
         </motion.button>
       </form>
-      <div style={{ marginTop: 22, textAlign: "center", fontSize: 16 }}>
+      <p style={{ marginTop: 24, textAlign: "center", fontSize: 16 }}>
         Already have an account?{" "}
-        <Link to="/login" style={{ color: "#6B7267", fontWeight: "bold" }}>
+        <Link to="/login" style={{ color: "#6B7267", fontWeight: "700", textDecoration: "underline" }}>
           Login
         </Link>
-      </div>
+      </p>
     </motion.div>
   );
 }
-
-const cardStyle = {
-  maxWidth: 420,
-  margin: "60px auto",
-  background: "#fff",
-  borderRadius: 18,
-  boxShadow: "0 6px 32px #e2e8f0",
-  padding: 48,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const inputStyle = {
-  padding: 14,
-  borderRadius: 6,
-  border: "1.5px solid #d3d7cf",
-  fontSize: 16,
-  outline: "none",
-  transition: "border 0.2s",
-  background: "#fff",
-  boxShadow: "0 1px 4px #f1f1f1",
-  width: "100%",
-};
-
-const buttonStyle = {
-  background: "#6B7267",
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  padding: "14px 0",
-  cursor: "pointer",
-  fontWeight: "bold",
-  fontSize: 18,
-  marginTop: 8,
-  boxShadow: "0 2px 8px #e2e8f0",
-  width: "100%",
-  letterSpacing: 1,
-};
-
-export default Signup;

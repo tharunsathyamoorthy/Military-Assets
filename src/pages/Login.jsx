@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../services/api";
 
-// Use the same logo as Signup
+// Military Logo SVG
 const MilitaryLogo = () => (
   <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
     <circle cx="24" cy="24" r="24" fill="#6B7267" />
@@ -37,40 +37,40 @@ export default function Login() {
     margin: "60px auto",
     background: "#fff",
     borderRadius: 20,
-    boxShadow: "0 8px 32px #e2e8f0",
-    padding: 0,
+    boxShadow: "0 12px 36px rgba(0,0,0,0.1)",
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   };
 
   const inputStyle = {
-    padding: 15,
+    padding: 16,
     borderRadius: 8,
-    border: "1.5px solid #d3d7cf",
-    fontSize: 17,
+    border: "1.5px solid #cbd5e1",
+    fontSize: 18,
     outline: "none",
-    transition: "border 0.2s, box-shadow 0.2s",
-    background: "#f8fafc",
-    boxShadow: "0 1px 4px #f1f1f1",
+    background: "#f9fafb",
+    boxShadow: "inset 0 1px 3px rgb(0 0 0 / 0.06)",
     width: "100%",
-    marginBottom: 2,
+    marginBottom: 6,
+    transition: "border-color 0.3s ease",
   };
 
   const buttonStyle = {
     background: "linear-gradient(90deg,#6B7267,#4e554b)",
     color: "#fff",
     border: "none",
-    borderRadius: 8,
-    padding: "15px 0",
+    borderRadius: 10,
+    padding: "16px 0",
     cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: 19,
-    marginTop: 8,
-    boxShadow: "0 2px 8px #e2e8f0",
+    fontWeight: "700",
+    fontSize: 20,
+    marginTop: 10,
+    boxShadow: "0 4px 12px rgba(75, 75, 75, 0.25)",
     width: "100%",
-    letterSpacing: 1,
-    transition: "background 0.2s",
+    letterSpacing: 1.1,
+    transition: "background 0.25s ease",
   };
 
   return (
@@ -83,28 +83,42 @@ export default function Login() {
       <div
         style={{
           background: "linear-gradient(135deg, #6B7267 60%, #e6f0ea 100%)",
-          padding: "38px 0 26px 0",
+          padding: "42px 0 28px 0",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
         <MilitaryLogo />
-        <div style={{ color: "#fff", fontWeight: 800, fontSize: 28, marginTop: 14, letterSpacing: 1.5, textShadow: "0 2px 8px #6B7267" }}>
+        <h2
+          style={{
+            color: "#fff",
+            fontWeight: "900",
+            fontSize: 30,
+            marginTop: 20,
+            letterSpacing: 1.4,
+            textShadow: "0 3px 10px #6B7267",
+          }}
+        >
           Welcome Back!
-        </div>
-        <div style={{ color: "#e6f0ea", fontSize: 16, marginTop: 8, fontWeight: 400, opacity: 0.95 }}>
+        </h2>
+        <p
+          style={{
+            color: "#d1d5db",
+            fontSize: 16,
+            marginTop: 8,
+            fontWeight: 400,
+            opacity: 0.9,
+            maxWidth: 280,
+            textAlign: "center",
+          }}
+        >
           To stay connected, please login with your personal info
-        </div>
+        </p>
       </div>
       <form
         onSubmit={handleLogin}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 22,
-          padding: "38px 36px 24px 36px",
-        }}
+        style={{ display: "flex", flexDirection: "column", gap: 20, padding: "38px 44px 32px" }}
       >
         <motion.input
           whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
@@ -114,6 +128,7 @@ export default function Login() {
           value={form.email}
           onChange={handleChange}
           style={inputStyle}
+          required
         />
         <motion.input
           whileFocus={{ scale: 1.03, borderColor: "#6B7267" }}
@@ -123,14 +138,18 @@ export default function Login() {
           value={form.password}
           onChange={handleChange}
           style={inputStyle}
+          required
         />
-        <div style={{ textAlign: "right", marginBottom: 8 }}>
-          <Link to="#" style={{ color: "#6B7267", fontSize: 15, textDecoration: "underline", opacity: 0.85 }}>
+        <div style={{ textAlign: "right", marginBottom: 10 }}>
+          <Link
+            to="#"
+            style={{ color: "#6B7267", fontSize: 15, textDecoration: "underline", opacity: 0.85 }}
+          >
             Forgot your password?
           </Link>
         </div>
         <motion.button
-          whileHover={{ scale: 1.04, background: "#5a6357" }}
+          whileHover={{ scale: 1.05, background: "#565e53" }}
           type="submit"
           style={buttonStyle}
         >
@@ -139,7 +158,7 @@ export default function Login() {
       </form>
       <div style={{ textAlign: "center", paddingBottom: 28, fontSize: 16 }}>
         Don't have an account?{" "}
-        <Link to="/signup" style={{ color: "#6B7267", fontWeight: "bold", textDecoration: "underline" }}>
+        <Link to="/signup" style={{ color: "#6B7267", fontWeight: "700", textDecoration: "underline" }}>
           Sign up
         </Link>
       </div>

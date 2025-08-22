@@ -6,35 +6,30 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Transfers from "./pages/Transfers.jsx";
 import Purchases from "./pages/Purchases.jsx";
 import Assignments from "./pages/Assignments.jsx";
+import Assets from "./pages/Assets.jsx";
+import Profile from "./pages/Profile.jsx";
+import Layout from "./components/Navbar.jsx";
 
 function App() {
-  const token = localStorage.getItem("token");
+  const token = !!localStorage.getItem("token");
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <BrowserRouter>
         <Routes>
-          {/* Always show Signup at root and unknown paths */}
           <Route path="/" element={<Signup />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/dashboard"
-            element={token ? <Dashboard /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/transfers"
-            element={token ? <Transfers /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/purchases"
-            element={token ? <Purchases /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/assignments"
-            element={token ? <Assignments /> : <Navigate to="/login" />}
-          />
-          <Route path="*" element={<Signup />} />
+          {/* Protected routes inside Layout */}
+          <Route element={token ? <Layout /> : <Navigate to="/login" />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transfers" element={<Transfers />} />
+            <Route path="/purchases" element={<Purchases />} />
+            <Route path="/assignments" element={<Assignments />} />
+             <Route path="/assets" element={<Assets />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+          <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
         </Routes>
       </BrowserRouter>
     </div>
