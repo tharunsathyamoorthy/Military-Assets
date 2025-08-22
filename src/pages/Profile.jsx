@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../services/api";
 
-const fieldLabel = {
-  name: "Full Name",
-  nick: "Nick Name",
-  gender: "Gender",
-  country: "Country",
-  language: "Language",
-  timezone: "Time Zone",
-  email: "Email",
-};
-
 const genderOptions = ["Male", "Female", "Other"];
 const countryOptions = ["India", "USA", "UK", "Germany", "Other"];
 const languageOptions = ["English", "Hindi", "Tamil", "French", "Other"];
@@ -33,7 +23,7 @@ export default function Profile() {
     email: "",
     imageUrl: "",
     base: "",
-    role: "",
+    role: ""
   });
   const [editing, setEditing] = useState(false);
   const [newImage, setNewImage] = useState(null);
@@ -42,59 +32,69 @@ export default function Profile() {
     async function fetchProfile() {
       try {
         const res = await API.get("/auth/profile", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
         setProfile(res.data);
-      } catch (error) {
-        // fallback to localStorage if API fails
-        setProfile((p) => ({
-          ...p,
+      } catch {
+        setProfile({
           name: localStorage.getItem("name") || "",
+          nick: localStorage.getItem("nick") || "",
+          gender: localStorage.getItem("gender") || "",
+          country: localStorage.getItem("country") || "",
+          language: localStorage.getItem("language") || "",
+          timezone: localStorage.getItem("timezone") || "",
           email: localStorage.getItem("email") || "",
+          imageUrl: localStorage.getItem("imageUrl") || "",
           base: localStorage.getItem("base") || "",
-          role: localStorage.getItem("role") || "",
-        }));
+          role: localStorage.getItem("role") || ""
+        });
       }
     }
     fetchProfile();
   }, []);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = e => {
     if (e.target.files && e.target.files[0]) {
-      setNewImage(e.target.files);
-      setProfile((prev) => ({
+      const file = e.target.files;
+      setNewImage(file);
+      setProfile(prev => ({
         ...prev,
-        imageUrl: URL.createObjectURL(e.target.files),
+        imageUrl: URL.createObjectURL(file)
       }));
     }
   };
 
-  const handleChange = (e) => {
-    setProfile((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  const handleChange = e => {
+    setProfile(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = async e => {
     e.preventDefault();
     try {
       const formData = new FormData();
-      Object.keys(profile).forEach((key) => {
-        if (key !== "imageUrl") formData.append(key, profile[key]);
+      Object.entries(profile).forEach(([key, value]) => {
+        if (key !== "imageUrl" && value !== undefined && value !== null)
+          formData.append(key, value);
       });
       if (newImage) formData.append("profileImage", newImage);
 
       await API.put("/auth/profile", formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data",
-        },
+          "Content-Type": "multipart/form-data"
+        }
       });
+
       alert("Profile updated successfully.");
       setEditing(false);
+      setNewImage(null);
+
+      Object.entries(profile).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) localStorage.setItem(key, value.toString());
+      });
     } catch (error) {
       alert("Failed to update profile.");
+      console.error(error);
     }
   };
 
@@ -106,7 +106,7 @@ export default function Profile() {
       justifyContent: "center",
       alignItems: "flex-start",
       paddingTop: 46,
-      fontFamily: "'Segoe UI', Arial, sans-serif",
+      fontFamily: "'Segoe UI', Arial, sans-serif"
     }}>
       <div style={{
         background: "#fff",
@@ -115,9 +115,9 @@ export default function Profile() {
         maxWidth: 900,
         width: "100%",
         padding: 40,
-        margin: "0 16px",
+        margin: "0 16px"
       }}>
-        {/* Welcome Header */}
+        {/* Header */}
         <div style={{
           marginBottom: 20,
           display: "flex",
@@ -132,8 +132,24 @@ export default function Profile() {
               {new Date().toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" })}
             </div>
           </div>
+          <button
+            onClick={() => setEditing(v => !v)}
+            style={{
+              background: "#4787f3",
+              color: "#fff",
+              border: "none",
+              borderRadius: 7,
+              padding: "10px 26px",
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer"
+            }}
+          >
+            {editing ? "Cancel" : "Edit"}
+          </button>
         </div>
-        {/* Card Area */}
+
+        {/* Profile Card */}
         <div style={{
           background: "linear-gradient(120deg, #f5f8fa 40%, #fbeee7 100%)",
           borderRadius: 16,
@@ -144,7 +160,7 @@ export default function Profile() {
           flexDirection: "column",
           gap: 0
         }}>
-          {/* Profile Image & Name */}
+          {/* Profile Image and Name */}
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -162,13 +178,9 @@ export default function Profile() {
                 background: "#e0e5ef"
               }}>
                 {profile.imageUrl ? (
-                  <img
-                    src={profile.imageUrl}
-                    alt="Profile"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
+                  <img src={profile.imageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <svg width="100%" height="100%" viewBox="0 0 96 96">
+                  <svg width="100%" height="100%" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="48" cy="48" r="48" fill="#c8d2e3" />
                     <ellipse cx="48" cy="44" rx="25" ry="20" fill="#8a9fc6" />
                     <ellipse cx="48" cy="78" rx="25" ry="10" fill="#e0e8f4" />
@@ -176,220 +188,146 @@ export default function Profile() {
                 )}
               </div>
               <div>
-                <div style={{
-                  fontWeight: 700, fontSize: 21, color: "#222d3d"
-                }}>{profile.name || "Your Name"}</div>
-                <div style={{
-                  color: "#929fb5",
-                  fontSize: 15,
-                  marginTop: 2
-                }}>{profile.email}</div>
+                <div style={{ fontWeight: 700, fontSize: 21, color: "#222d3d" }}>
+                  {profile.name || "Your Name"}
+                </div>
+                <div style={{ color: "#929fb5", fontSize: 15, marginTop: 2 }}>
+                  {profile.email}
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setEditing((v) => !v)}
-              style={{
-                background: "#4787f3",
-                color: "#fff",
-                border: "none",
-                borderRadius: 7,
-                padding: "10px 26px",
-                fontWeight: 600,
-                fontSize: 16,
-                cursor: "pointer",
-                marginLeft: "auto"
-              }}
-            >
-              {editing ? "Cancel" : "Edit"}
-            </button>
           </div>
-          {/* Form Fields */}
+
+          {/* Profile Form */}
           <form onSubmit={handleUpdate} style={{
             marginTop: 12,
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
             gap: "18px 32px",
-            opacity: editing ? 1 : 0.55,
+            opacity: editing ? 1 : 0.5,
             pointerEvents: editing ? "auto" : "none",
             transition: "opacity 0.3s"
           }}>
-            {/* left */}
             <div>
-              <label className="profile-label">Full Name</label>
-              <input
-                name="name"
-                value={profile.name}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-                autoComplete="off"
-                required
-              />
+              <label style={labelStyle}>Full Name</label>
+              <input type="text" name="name" value={profile.name} onChange={handleChange} style={inputStyle} disabled={!editing} required />
             </div>
             <div>
-              <label className="profile-label">Nick Name</label>
-              <input
-                name="nick"
-                value={profile.nick}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-                autoComplete="off"
-              />
+              <label style={labelStyle}>Nick Name</label>
+              <input type="text" name="nick" value={profile.nick} onChange={handleChange} style={inputStyle} disabled={!editing} />
             </div>
             <div>
-              <label className="profile-label">Gender</label>
-              <select
-                name="gender"
-                value={profile.gender}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-              >
+              <label style={labelStyle}>Gender</label>
+              <select name="gender" value={profile.gender} onChange={handleChange} style={inputStyle} disabled={!editing}>
                 <option value="">Select</option>
-                {genderOptions.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
+                {genderOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
             <div>
-              <label className="profile-label">Country</label>
-              <select
-                name="country"
-                value={profile.country}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-              >
+              <label style={labelStyle}>Country</label>
+              <select name="country" value={profile.country} onChange={handleChange} style={inputStyle} disabled={!editing}>
                 <option value="">Select</option>
-                {countryOptions.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+                {countryOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
             <div>
-              <label className="profile-label">Language</label>
-              <select
-                name="language"
-                value={profile.language}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-              >
+              <label style={labelStyle}>Language</label>
+              <select name="language" value={profile.language} onChange={handleChange} style={inputStyle} disabled={!editing}>
                 <option value="">Select</option>
-                {languageOptions.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
+                {languageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
             <div>
-              <label className="profile-label">Time Zone</label>
-              <select
-                name="timezone"
-                value={profile.timezone}
-                onChange={handleChange}
-                disabled={!editing}
-                style={inputStyle}
-              >
+              <label style={labelStyle}>Time Zone</label>
+              <select name="timezone" value={profile.timezone} onChange={handleChange} style={inputStyle} disabled={!editing}>
                 <option value="">Select</option>
-                {timezoneOptions.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
+                {timezoneOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
             </div>
-            {/* Only show image upload in edit mode */}
             {editing && (
               <div style={{ gridColumn: "1 / 3" }}>
-                <label className="profile-label">Profile Image</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={!editing}
-                  style={{ ...inputStyle, padding: 6 }}
-                />
+                <label style={labelStyle}>Profile Image</label>
+                <input type="file" accept="image/*" onChange={handleImageChange} style={{ ...inputStyle, padding: 6 }} disabled={!editing} />
               </div>
             )}
             {editing && (
               <div style={{ gridColumn: "1 / 3", textAlign: "right" }}>
-                <button
-                  type="submit"
-                  style={{
-                    background: "#4787f3",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    padding: "11px 36px",
-                    fontWeight: 700,
-                    fontSize: 17,
-                    cursor: "pointer",
-                    marginTop: 8
-                  }}
-                >
-                  Save Changes
-                </button>
+                <button type="submit" style={submitButtonStyle}>Save Changes</button>
               </div>
             )}
           </form>
-          {/* Non-editable details if not editing */}
+
           {!editing && (
-            <div style={{
-              marginTop: 30,
-              display: "block",
-              fontSize: 15,
-              color: "#7f869d"
-            }}>
+            <div style={{ marginTop: 30, fontSize: 15, color: "#7f869d" }}>
               <div><b>Base:</b> {profile.base || "N/A"}</div>
               <div><b>Role:</b> {profile.role || "N/A"}</div>
               <div style={{ marginTop: 26 }}>
-                <b style={{ color: "#22223b" }}>My Email Address:</b>
-                <div style={{
-                  marginTop: 5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                  background: "#f7fafc",
-                  borderRadius: 8,
-                  padding: "12px 10px"
-                }}>
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 32,
-                      height: 32,
-                      background: "#4787f3",
-                      color: "#fff",
-                      borderRadius: "50%",
-                      fontWeight: 700
-                    }}
-                  >@</span>
-                  <span style={{ fontSize: 15, color: "#444", fontWeight: 600 }}>
-                    {profile.email}
-                  </span>
+                <b style={{ color: "#222" }}>My Email Address:</b>
+                <div style={emailBoxStyle}>
+                  <span style={emailIconStyle}>@</span>
+                  <span style={{ fontSize: 15, color: "#444", fontWeight: 600 }}>{profile.email}</span>
                   <span style={{ marginLeft: "auto", color: "#aaa", fontSize: 13 }}>Active</span>
                 </div>
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>
   );
 }
 
+const labelStyle = {
+  fontWeight: 600,
+  fontSize: 14,
+  color: "#6b6c72",
+  userSelect: "none"
+};
+
 const inputStyle = {
   width: "100%",
   padding: "12px 16px",
   borderRadius: 8,
-  border: "1.3px solid #d5d8e3",
+  border: "1.3px solid #d0d3d7",
   fontSize: 16,
   outline: "none",
-  background: "#f5f7fb",
+  background: "#f7fafc",
   color: "#222",
   marginTop: 5,
   marginBottom: 2,
   transition: "border-color 0.2s"
+};
+
+const submitButtonStyle = {
+  background: "#4787f3",
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  padding: "11px 36px",
+  fontWeight: 600,
+  fontSize: 17,
+  cursor: "pointer",
+  marginTop: 8
+};
+
+const emailBoxStyle = {
+  marginTop: 5,
+  display: "flex",
+  alignItems: "center",
+  gap: 7,
+  background: "#f7fafc",
+  borderRadius: 8,
+  padding: "12px 10px"
+};
+
+const emailIconStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 32,
+  height: 32,
+  background: "#4787f3",
+  color: "white",
+  borderRadius: "50%",
+  fontWeight: 700
 };
