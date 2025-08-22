@@ -16,7 +16,6 @@ import {
 const COLORS = ["#6B7267", "#ffc658", "#a3e635", "#38bdf8"];
 
 function useSafeNumber(value) {
-  // Ensure value is a finite number and parsed as number
   const num = Number(value);
   return isFinite(num) ? num : 0;
 }
@@ -108,6 +107,12 @@ function Dashboard() {
     const [hover, setHover] = useState(false);
     const animatedValue = useCountUp(value);
 
+    // For Net Movement: always show positive, color red if negative
+    const showValue =
+      label === "Net Movement" ? Math.abs(animatedValue) : animatedValue;
+    const showColor =
+      label === "Net Movement" && value < 0 ? "#ef4444" : "#222";
+
     return (
       <div
         onMouseEnter={() => setHover(true)}
@@ -135,14 +140,14 @@ function Dashboard() {
         <span
           style={{
             fontWeight: 900,
-            color: label === "Net Movement" && value < 0 ? "#ef4444" : "#222",
+            color: showColor,
             fontSize: 44,
             margin: "12px 0 0",
             letterSpacing: "0.1em",
             lineHeight: 1,
           }}
         >
-          {label === "Net Movement" && value > 0 ? `+${animatedValue}` : animatedValue}
+          {showValue}
         </span>
         <span
           style={{
@@ -217,17 +222,6 @@ function Dashboard() {
       </div>
     );
   };
-
-  const AssetPage = () => (
-    <div style={{ minHeight: "100vh", background: "#f9fafb", padding: "2rem" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#1a202c" }}>Assets</h1>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "1rem" }}>
-        {assets.slice(0, 10).map(asset => (
-          <AssetCard key={asset._id} asset={asset} onDelete={handleDelete} />
-        ))}
-      </div>
-    </div>
-  );
 
   // Data preparation for charts
   const assetActivityData = assets.map(a => ({
