@@ -20,6 +20,7 @@ function Assignments() {
           API.get("/assets"),
           API.get("/assignments"),
         ]);
+        console.log("Assets fetched:", assetsRes.data);
         setAssets(assetsRes.data);
         setAssignments(assignmentsRes.data);
       } catch (error) {
@@ -34,8 +35,7 @@ function Assignments() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (!form.asset_id.trim()) {
+    if (!form.asset_id) {
       alert("Please select an asset");
       return;
     }
@@ -143,9 +143,7 @@ function Assignments() {
             required
             style={inputStyle}
           >
-            <option value="">
-              {assets.length === 0 ? "No assets available" : "Select Asset"}
-            </option>
+            <option value="">{assets.length === 0 ? "No assets available" : "Select Asset"}</option>
             {assets.map((a) => (
               <option key={a._id} value={a._id}>
                 {a.name} ({a.type}) - {a.base}
