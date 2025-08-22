@@ -13,4 +13,4 @@ const assetSchema = new mongoose.Schema({
   expended: { type: Number, default: 0 }
 }, { timestamps: true });
 
-export default mongoose.model("Asset", assetSchema);
+export default mongoose.models.Asset || mongoose.model("Asset", assetSchema);

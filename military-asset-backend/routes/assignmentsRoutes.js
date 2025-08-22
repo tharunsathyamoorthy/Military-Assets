@@ -6,7 +6,7 @@ const router = express.Router();
 
 const assignmentSchema = new mongoose.Schema(
   {
-    asset_id: { type: mongoose.Schema.Types.ObjectId, ref: "Asset", required: true },
+    asset_id: { type: mongoose.Schema.Types.ObjectId, ref: "Asset" },
     personnel: { type: String, required: true, trim: true },
     qty: { type: Number, required: true, min: 1 },
     date: { type: Date, required: true },

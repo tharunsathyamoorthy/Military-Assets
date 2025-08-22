@@ -143,11 +143,12 @@ function Assignments() {
             required
             style={inputStyle}
           >
-            <option value="">Select an asset</option>
-            {assets.length === 0 && <option disabled>No assets available</option>}
-            {assets.map((asset) => (
-              <option key={asset._id} value={asset._id}>
-                {asset.name} ({asset.type}) - {asset.base}
+            <option value="">
+              {assets.length === 0 ? "No assets available" : "Select Asset"}
+            </option>
+            {assets.map((a) => (
+              <option key={a._id} value={a._id}>
+                {a.name} ({a.type}) - {a.base}
               </option>
             ))}
           </select>

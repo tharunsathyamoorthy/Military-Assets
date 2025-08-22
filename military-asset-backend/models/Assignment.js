@@ -5,7 +5,6 @@ const assignmentSchema = new mongoose.Schema(
     asset_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Asset",
-      required: true,
     },
     personnel: {
       type: String,
