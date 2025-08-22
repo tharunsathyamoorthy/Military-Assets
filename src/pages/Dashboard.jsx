@@ -15,6 +15,12 @@ import {
 
 const COLORS = ["#6B7267", "#ffc658", "#a3e635", "#38bdf8"];
 
+function useSafeNumber(value) {
+  // Ensure value is a finite number and parsed as number
+  const num = Number(value);
+  return isFinite(num) ? num : 0;
+}
+
 // Count-up animation hook (duration in ms, default 6000ms)
 function useCountUp(target, duration = 6000) {
   const [count, setCount] = useState(0);
@@ -37,7 +43,6 @@ function useCountUp(target, duration = 6000) {
       }
     }
     raf = requestAnimationFrame(animate);
-    // Cleanup
     return () => cancelAnimationFrame(raf);
   }, [target, duration]);
   return count;
@@ -60,11 +65,13 @@ function Dashboard() {
         const res = await API.get("/assets");
         const assetsWithDefaults = res.data.map((asset) => ({
           ...asset,
-          purchases: asset.purchases ?? 0,
-          transferIn: asset.transferIn ?? 0,
-          transferOut: asset.transferOut ?? 0,
-          assigned: asset.assigned ?? 0,
-          expended: asset.expended ?? 0,
+          purchases: useSafeNumber(asset.purchases),
+          transferIn: useSafeNumber(asset.transferIn),
+          transferOut: useSafeNumber(asset.transferOut),
+          assigned: useSafeNumber(asset.assigned),
+          expended: useSafeNumber(asset.expended),
+          openingBalance: useSafeNumber(asset.openingBalance),
+          closingBalance: useSafeNumber(asset.closingBalance),
         }));
         setAssets(assetsWithDefaults);
       } catch (err) {
@@ -75,23 +82,15 @@ function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const opening = assets.reduce(
-      (acc, asset) => acc + (asset.openingBalance || 0),
-      0
-    );
-    const closing = assets.reduce(
-      (acc, asset) => acc + (asset.closingBalance || 0),
-      0
-    );
+    if (assets.length === 0) {
+      setMetrics({ opening: 0, closing: 0, netMovement: 0, assigned: 0, expended: 0 });
+      return;
+    }
+    const opening = assets.reduce((acc, asset) => acc + asset.openingBalance, 0);
+    const closing = assets.reduce((acc, asset) => acc + asset.closingBalance, 0);
     const netMovement = closing - opening;
-    const assigned = assets.reduce(
-      (acc, asset) => acc + (asset.assigned || 0),
-      0
-    );
-    const expended = assets.reduce(
-      (acc, asset) => acc + (asset.expended || 0),
-      0
-    );
+    const assigned = assets.reduce((acc, asset) => acc + asset.assigned, 0);
+    const expended = assets.reduce((acc, asset) => acc + asset.expended, 0);
     setMetrics({ opening, closing, netMovement, assigned, expended });
   }, [assets]);
 
@@ -105,10 +104,9 @@ function Dashboard() {
     }
   };
 
-  // Animated Stat Card
   const StatCard = ({ label, value, color }) => {
     const [hover, setHover] = useState(false);
-    const animatedValue = useCountUp(value, 6000);
+    const animatedValue = useCountUp(value);
 
     return (
       <div
@@ -131,32 +129,31 @@ function Dashboard() {
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
         }}
       >
-        <span style={{ color: "#a1a1aa", fontWeight: 700, fontSize: 15 }}>
+        <span style={{ color: "#888aa0", fontWeight: 700, fontSize: 15 }}>
           {label}
         </span>
         <span
           style={{
-            fontWeight: 800,
-            color: "#18181b",
+            fontWeight: 900,
+            color: label === "Net Movement" && value < 0 ? "#ef4444" : "#222",
             fontSize: 44,
-            margin: "16px 0 0",
-            letterSpacing: "1px",
+            margin: "12px 0 0",
+            letterSpacing: "0.1em",
             lineHeight: 1,
           }}
         >
-          {label === "Net Movement" && animatedValue > 0 ? "+" : ""}
-          {animatedValue}
+          {label === "Net Movement" && value > 0 ? `+${animatedValue}` : animatedValue}
         </span>
         <span
           style={{
             marginTop: 16,
-            width: 24,
-            height: 24,
+            width: 20,
+            height: 20,
             borderRadius: "50%",
             background: color,
             display: "inline-block",
           }}
-        ></span>
+        />
       </div>
     );
   };
@@ -171,7 +168,7 @@ function Dashboard() {
           background: "#f8fafc",
           borderRadius: 18,
           boxShadow: hover
-            ? "0 8px 30px rgba(59,130,246,0.2)"
+            ? "0 8px 30px rgba(59, 130, 246, 0.2)"
             : "0 2px 12px rgba(59, 130, 246, 0.06)",
           padding: 22,
           marginRight: 16,
@@ -187,78 +184,60 @@ function Dashboard() {
         <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 13, marginBottom: 8 }}>
           {asset.type}
         </div>
-        <div style={{ fontWeight: 800, fontSize: 18, color: "#22223b", marginBottom: 3 }}>
+        <div style={{ fontWeight: 800, fontSize: 18, color: "#222" }}>
           {asset.name}
         </div>
-        <div style={{ fontSize: 13, color: "#a3a3a3" }}>{asset.base}</div>
+        <div style={{ fontSize: 13, color: "#888" }}>
+          {asset.base}
+        </div>
         <div style={{ display: "flex", gap: 10, fontSize: 12, marginTop: 8 }}>
           <span>Open: {asset.openingBalance}</span>
           <span>|</span>
           <span>Close: {asset.closingBalance}</span>
         </div>
-        {/* Delete icon */}
         <button
           aria-label="Delete"
           onClick={() => onDelete(asset._id)}
           style={{
             position: "absolute",
-            top: 16,
-            right: 16,
-            background: "none",
+            top: 14,
+            right: 14,
+            background: "transparent",
             border: "none",
             cursor: "pointer",
             padding: 0,
           }}
         >
           <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
-            <rect x="5" y="8" width="10" height="7" rx="2" fill="#e53e3e" />
-            <rect x="9" y="3" width="2" height="2" rx="1" fill="#e53e3e" />
-            <path d="M7 6h6" stroke="#e53e3e" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="5" y="8" width="10" height="7" rx="2" fill="#ef4444" />
+            <rect x="9" y="3" width="2" height="2" rx="1" fill="#ef4444" />
+            <path d="M7 6h6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
       </div>
     );
   };
 
-  // Bar chart for Asset Activity
-  const AssetBarChart = ({ data }) => (
-    <ResponsiveContainer width="100%" height={140}>
-      <BarChart data={data}>
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill="#6B7267" radius={[8, 8, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+  const AssetPage = () => (
+    <div style={{ minHeight: "100vh", background: "#f9fafb", padding: "2rem" }}>
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#1a202c" }}>Assets</h1>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "1rem" }}>
+        {assets.slice(0, 10).map(asset => (
+          <AssetCard key={asset._id} asset={asset} onDelete={handleDelete} />
+        ))}
+      </div>
+    </div>
   );
 
-  // Pie chart for Asset Categories
-  const AssetPieChart = ({ data }) => (
-    <ResponsiveContainer width="100%" height={140}>
-      <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" outerRadius={50} fill="#6B7267" label>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  );
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  const assetActivityData = assets.slice(0, 5).map((a) => ({
+  // Data preparation for charts
+  const assetActivityData = assets.map(a => ({
     name: a.name,
     value: a.openingBalance + a.closingBalance,
   }));
 
   const categoryData = assets.reduce((acc, asset) => {
     const category = asset.type || "Other";
-    const found = acc.find((item) => item.name === category);
+    const found = acc.find(item => item.name === category);
     if (found) {
       found.value += 1;
     } else {
@@ -267,100 +246,84 @@ function Dashboard() {
     return acc;
   }, []);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#f5f6fa",
-        flex: 1,
-        fontFamily: "Inter, Segoe UI, sans-serif",
-      }}
-    >
-      <main style={{ padding: "38px 44px 0", minWidth: 0 }}>
-        <div style={{ marginBottom: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}>
-          <div>
-            <h2 style={{ color: "#181825", fontWeight: 800, fontSize: 38, margin: 0, letterSpacing: 1.2 }}>
-              Dashboard
-            </h2>
-            <div style={{ color: "#adb5bd", marginTop: 4, fontWeight: 500, fontSize: 18 }}>
-              Welcome to Military Modern Admin Dashboard
-            </div>
-          </div>
+    <div style={{ minHeight: "100vh", background: "#f9fafb", fontFamily: "'Inter', sans-serif" }}>
+      <main style={{ padding: "2rem 3rem" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#2d3748" }}>Dashboard</h2>
           <button
             onClick={handleLogout}
             style={{
-              background: "linear-gradient(90deg,#3b82f6,#818cf8)",
+              padding: "0.8rem 2.3rem",
+              fontSize: "1.25rem",
               color: "#fff",
+              background: "linear-gradient(90deg,#3b82f6,#6366f1)",
               border: "none",
-              borderRadius: 17,
-              padding: "17px 44px",
+              borderRadius: "0.75rem",
               cursor: "pointer",
-              fontWeight: 700,
-              fontSize: 20,
-              letterSpacing: 2,
-              boxShadow: "0 3px 20px rgba(59, 130, 246, 0.16)",
+              fontWeight: "bold",
+              boxShadow: "0 4px 12px rgba(67,56,202,0.5)"
             }}
           >
             Logout
           </button>
-        </div>
+        </header>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 36, margin: "36px 0 38px" }}>
-          <StatCard label="Opening Balance" value={metrics.opening} color="#60a5fa" />
-          <StatCard label="Closing Balance" value={metrics.closing} color="#fbbf24" />
-          <StatCard label="Net Movement" value={metrics.netMovement} color="#22c55e" />
-          <StatCard label="Assigned" value={metrics.assigned} color="#f43f5e" />
+        <section style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+          <StatCard label="Opening Balance" value={metrics.opening} color="#3b82f6" />
+          <StatCard label="Closing Balance" value={metrics.closing} color="#f59e0b" />
+          <StatCard label="Net Movement" value={metrics.netMovement} color={metrics.netMovement < 0 ? "#ef4444" : "#22c55e"} />
+          <StatCard label="Assigned" value={metrics.assigned} color="#ef4444" />
           <StatCard label="Expended" value={metrics.expended} color="#8b5cf6" />
-        </div>
+        </section>
 
-        <div style={{ marginBottom: 22 }}>
-          <div style={{ fontWeight: 700, fontSize: 20, color: "#181825", margin: "0 0 14px 5px" }}>
-            Popular Assets
-          </div>
-          <div style={{ display: "flex", overflowX: "auto", gap: 14, paddingBottom: 12 }}>
-            {assets.slice(0, 5).map((asset) => (
-              <AssetCard asset={asset} key={asset._id} onDelete={handleDelete} />
+        <section style={{ marginBottom: "3rem" }}>
+          <h3 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1a202c", marginBottom: "1rem" }}>Popular Assets</h3>
+          <div style={{ overflowX: "auto", paddingBottom: "1rem", display: "flex", gap: "1rem" }}>
+            {assets.slice(0, 10).map(asset => (
+              <AssetCard key={asset._id} asset={asset} onDelete={handleDelete} />
             ))}
           </div>
-        </div>
+        </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 26, marginBottom: 36 }}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              padding: 22,
-            }}
-          >
-            <div style={{ fontWeight: 800, color: "#22223b", marginBottom: 10 }}>Asset Activity</div>
-            <AssetBarChart data={assetActivityData} />
+        <section style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "2rem" }}>
+          <div style={{ background: "#fff", borderRadius: "1rem", padding: "1.5rem" }}>
+            <h4 style={{ fontWeight: 700, color: "#2d3748", marginBottom: "1rem" }}>Asset Activity</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={assetActivityData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#6B7280" radius={[10,10,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              padding: 22,
-            }}
-          >
-            <div style={{ fontWeight: 800, color: "#22223b", marginBottom: 10 }}>Asset Categories</div>
-            <AssetPieChart data={categoryData} />
+
+          <div style={{ background: "#fff", borderRadius: "1rem", padding: "1.5rem" }}>
+            <h4 style={{ fontWeight: 700, color: "#2d3748", marginBottom: "1rem" }}>Asset Categories</h4>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie data={categoryData} dataKey="value" nameKey="name" outerRadius={70} label>
+                  {categoryData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              padding: 22,
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontWeight: 800, color: "#22223b", marginBottom: 12 }}>Total Assets</div>
-            <span style={{ fontWeight: 900, fontSize: 35, color: "#2563eb" }}>{assets.length}</span>
-            <div style={{ fontSize: 13, color: "#a3a3a3", marginTop: 8 }}>Tracked Items</div>
+
+          <div style={{ background: "#fff", borderRadius: "1rem", padding: "1.5rem", textAlign: "center" }}>
+            <h4 style={{ fontWeight: 700, color: "#2d3748", marginBottom: "1rem" }}>Total Assets</h4>
+            <p style={{ fontSize: "3rem", fontWeight: 900, color: "#2563eb" }}>{assets.length}</p>
+            <p style={{ fontSize: "1rem", color: "#718096" }}>Tracked Items</p>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   );
