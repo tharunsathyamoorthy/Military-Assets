@@ -1,22 +1,23 @@
 import express from "express";
 import mongoose from "mongoose";
-import Asset from "../models/Asset.js"; // <--- MAKE SURE THIS MATCHES assetsRoutes.js!
+import Asset from "../models/Asset.js"; // Ensure this path matches assetsRoutes.js
 
 const router = express.Router();
 
 const assignmentSchema = new mongoose.Schema(
   {
     asset_id: { type: mongoose.Schema.Types.ObjectId, ref: "Asset", required: true },
-    personnel: { type: String, required: true },
+    personnel: { type: String, required: true, trim: true },
     qty: { type: Number, required: true, min: 1 },
     date: { type: Date, required: true },
-    status: { type: String, enum: ["Assigned", "Expended"], default: "Assigned" }
+    status: { type: String, enum: ["Assigned", "Expended"], default: "Assigned" },
   },
   { timestamps: true }
 );
 
 const Assignment = mongoose.models.Assignment || mongoose.model("Assignment", assignmentSchema);
 
+// Create a new assignment
 router.post("/", async (req, res) => {
   try {
     const { asset_id, personnel, qty, date, status } = req.body;
@@ -25,6 +26,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
+    // Validate asset existence
     const asset = await Asset.findById(asset_id);
     if (!asset) {
       return res.status(404).json({ message: "Asset not found." });
@@ -38,35 +40,35 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Insufficient asset quantity available." });
     }
 
-    // Create assignment record
+    // Create assignment
     const assignment = new Assignment({ asset_id, personnel, qty, date, status });
     await assignment.save();
 
-    // Update asset quantities based on assignment
+    // Update asset quantities accordingly
     if (status === "Assigned") {
       asset.assigned = (asset.assigned || 0) + qty;
-    }
-    if (status === "Expended") {
+    } else if (status === "Expended") {
       asset.expended = (asset.expended || 0) + qty;
     }
     asset.closingBalance -= qty;
     await asset.save();
 
-    res.status(201).json(assignment);
+    return res.status(201).json(assignment);
   } catch (err) {
     console.error("Assignment creation failed:", err);
-    res.status(500).json({ message: "Server error while creating assignment." });
+    return res.status(500).json({ message: "Server error while creating assignment." });
   }
 });
 
+// Get all assignments with asset details populated
 router.get("/", async (req, res) => {
   try {
     const assignments = await Assignment.find()
       .populate("asset_id", "name type base")
-      .sort({ createdAt: -1 }); // Latest first
-    res.json(assignments);
+      .sort({ createdAt: -1 });
+    return res.json(assignments);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch assignments." });
+    return res.status(500).json({ message: "Failed to fetch assignments." });
   }
 });
 

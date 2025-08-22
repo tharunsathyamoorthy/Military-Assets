@@ -35,7 +35,7 @@ function Assignments() {
     e.preventDefault();
 
     // Validation
-    if (!form.asset_id) {
+    if (!form.asset_id.trim()) {
       alert("Please select an asset");
       return;
     }
@@ -144,6 +144,7 @@ function Assignments() {
             style={inputStyle}
           >
             <option value="">Select an asset</option>
+            {assets.length === 0 && <option disabled>No assets available</option>}
             {assets.map((asset) => (
               <option key={asset._id} value={asset._id}>
                 {asset.name} ({asset.type}) - {asset.base}
